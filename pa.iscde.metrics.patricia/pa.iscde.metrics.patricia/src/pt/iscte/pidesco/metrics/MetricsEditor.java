@@ -4,6 +4,7 @@ import java.io.File;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -30,6 +31,7 @@ import pt.iscte.pidesco.extensibility.ExtensibilityMetric;
 import pt.iscte.pidesco.extensibility.PidescoView;
 import pt.iscte.pidesco.javaeditor.service.JavaEditorListener;
 import pt.iscte.pidesco.javaeditor.service.JavaEditorServices;
+import pt.iscte.pidesco.service.ServiceImplementation;
 import pt.iscte.pidesco.utiles.CalculateMetrics;
 import pt.iscte.pidesco.utiles.ClassAnalyzer;
 import pt.iscte.pidesco.utiles.Constants;
@@ -57,22 +59,15 @@ public class MetricsEditor extends CalculateMetrics implements PidescoView {
 	private int numberOfParameters = 0;
 	private int numberOfTotalLines = 0;
 	
-	
 	//Lists
-	private String[] titles = { "Metric", "Total", "Average" };
-	private int numberTitles = titles.length;
-	private String[] nameRows = new String[] { "Number of Packages", "Number of Classes",
-			"Number of Methods", "Number of Methods Override", "Number of Static Attributes",
-			"Number of Attributes", "Total Lines of Code" , "Number of Parameters"};
-	private int numberRows = nameRows.length;
-	
+	public int numberTitles = Constants.TITLES.length;
+	public int numberRows = Constants.NAME_ROWS.length;	
 	
 	public MetricsEditor() {
 		visitor = new Visitor();
 		classAnalyzer = new ClassAnalyzer();
 		classList = new ArrayList<>();
 		linesOfClasses = new HashMap<>();
-		
 	}
 	
 	@Override
@@ -86,19 +81,14 @@ public class MetricsEditor extends CalculateMetrics implements PidescoView {
 		ServiceReference<JavaEditorServices> serviceReference = context.getServiceReference(JavaEditorServices.class);
 		JavaEditorServices editor = context.getService(serviceReference);
 		
-
 		editor.addListener(new JavaEditorListener() {
 
 			@Override
 			public void selectionChanged(File file, String text, int offset, int length) {
-				// TODO Auto-generated method stub
-
 			}
 
 			@Override
 			public void fileSaved(File file) {
-				// TODO Auto-generated method stub
-
 			}
 
 			@Override
@@ -108,16 +98,12 @@ public class MetricsEditor extends CalculateMetrics implements PidescoView {
 
 			@Override
 			public void fileClosed(File file) {
-				// TODO Auto-generated method stub
-
 			}
 		});
 		
 		
 		// Buscar o workspace
 		String workspace = ResourcesPlugin.getWorkspace().getRoot().getLocation().toString();
-		System.out.println("WORKSPACE : " + workspace);
-		
 		File basedir = new File(workspace);
 		getFiles(basedir);
 		
@@ -130,9 +116,7 @@ public class MetricsEditor extends CalculateMetrics implements PidescoView {
 			linesOfClasses.put(name[name.length-1].replace(".java", ""), numberOfLines);
 			
 		}
-		
-		getNewContent();
-		
+	
 		tableProject = new Table(viewArea, SWT.MULTI | SWT.FULL_SELECTION);
 		tableProject.setVisible(false);
 		
@@ -142,47 +126,14 @@ public class MetricsEditor extends CalculateMetrics implements PidescoView {
 		// CLASS
 		showClassMetrics(viewArea);
 		
+//		testService(viewArea);
+		
 		//METRICS
 		createMetricsFile(viewArea, workspace);
 		
 		
 	}
 	
-	//extension point
-	private void getNewContent() {
-		IExtensionRegistry reg = Platform.getExtensionRegistry();
-		IConfigurationElement[] elements = reg.getConfigurationElementsFor("pa.iscde.metrics.patricia.metricsExtension");
-		System.out.println(elements.length);
-		for(int i = 0 ; i < elements.length ; i++) {
-			try {
-				System.out.println(elements[i]);
-				ExtensibilityMetric action = (ExtensibilityMetric) elements[i].createExecutableExtension("class");
-				//substituir o null depois pelos HashMaps
-				
-				action.run();
-				System.out.println("this");
-//				action.addClassMetric(null);
-//				action.addProjectMetric(null);
-
-//				for(int j = 0; j<extraClassMetrics.size();j++) {
-//
-//					if(!metricListClass.contains(extraClassMetrics.get(j))) {
-//						metricListClass.add(extraClassMetrics.get(j));
-//						linesClassA.add(extraClassMetrics.get(j).getName());
-//					}
-//				}
-//
-//				for(int j = 0; j<extraPackageMetrics.size(); j++) {
-//					metricListPackage.add(extraPackageMetrics.get(j));
-//				}
-
-			} catch (CoreException e1) {
-				e1.printStackTrace();
-			}
-
-		}
-
-	}
 
 	private void createMetricsFile(Composite viewArea, String workspace) {
 		Button metricsProject = new Button(viewArea, SWT.PUSH);
@@ -242,7 +193,7 @@ public class MetricsEditor extends CalculateMetrics implements PidescoView {
 					
 					for (int i = 0; i < numberTitles ; i++) {
 						TableColumn column = new TableColumn(tableProject, SWT.NONE);
-						column.setText(titles[i]);
+						column.setText(Constants.TITLES[i]);
 					}
 					
 					for (int j = 0; j < numberRows - 1 ; j++) {
@@ -256,8 +207,12 @@ public class MetricsEditor extends CalculateMetrics implements PidescoView {
 					tableProject.setSize(tableProject.computeSize(SWT.DEFAULT, 200));
 					viewArea.layout();
 					
+					//extension point
+					getNewContent(true);
+					
 					break;
 				}
+				
 				clearData();
 			}
 		});
@@ -294,7 +249,7 @@ public class MetricsEditor extends CalculateMetrics implements PidescoView {
 
 						for (int i = 0; i < numberTitles - 1; i++) {
 							TableColumn column = new TableColumn(tableProject, SWT.NONE);
-							column.setText(titles[i]);
+							column.setText(Constants.TITLES[i]);
 						}
 
 						for (int j = 2; j < numberRows; j++) {
@@ -309,61 +264,109 @@ public class MetricsEditor extends CalculateMetrics implements PidescoView {
 						tableProject.setSize(tableProject.computeSize(SWT.DEFAULT, 200));
 						viewArea.layout();
 
+						//extension point
+						getNewContent(false);
+
 						break;
 					}
 					clearData();
 				}else {
 					MessageDialog.openError(new Shell(), "Error", "Please select the class that you want to analize");
 				}
+				
+				
 			}
 		});
 	}
 	
-	private void putData(TableItem item, int posicion, int totalLines) {
-		item.setText(0, nameRows[posicion]);
-		double average = 0;
-		if (nameRows[posicion].endsWith(Constants.PACKAGES)) {
-			item.setText(1, String.valueOf(numberOfPackages));
-		}else if (nameRows[posicion].contains(Constants.CLASSES)) {
-			item.setText(1, String.valueOf(numberOfClasses));
-			//CLASSE POR PACKAGE 
-			average =(float) numberOfClasses / numberOfPackages;
-		}
-		else if (nameRows[posicion].endsWith(Constants.METHODS)) {
-			item.setText(1, String.valueOf(numberOfMethods));
-			//MÉTODOS POR CLASSE
-			average = (float) numberOfMethods / numberOfClasses;
-		}
-		else if (nameRows[posicion].endsWith(Constants.OVERRIDE)) {
-			item.setText(1, String.valueOf(numberOfOverride));
-			//MÉTODOS OVERRIDE POR METODOS TOTAIS
-			average = (float) numberOfOverride / numberOfMethods;
-		}
-		else if (nameRows[posicion].endsWith(Constants.PARAMETERS)) {
-			item.setText(1, String.valueOf(numberOfParameters));
-			//PARAMETERS POR METODO
-			average = (float) numberOfParameters / numberOfMethods;
-		}
-		else if (nameRows[posicion].endsWith(Constants.STATIC_ATTRIBUTES)) {
-			item.setText(1, String.valueOf(numberOfStaticAttributes));
-			//STATIC ATTRIBUTES POR NUMERO ATTRIBUTES : 
-			average= (float) numberOfStaticAttributes / numberOfAttributes;
-		}
-		else if (nameRows[posicion].endsWith(Constants.ATTRIBUTES)) {
-			item.setText(1, String.valueOf(numberOfAttributes));
-			//ATTRIBUTES POR CLASSE : 
-			average= (float) numberOfAttributes / numberOfClasses;
-		}
-		else if (nameRows[posicion].endsWith(Constants.TOTAL_LINES)) {
-			item.setText(1, String.valueOf(totalLines));
-		}
-		
-		if (average <= 0) {
-			item.setText(2, "-");
-		}else {
-			DecimalFormat df = new DecimalFormat("#.###");
-			item.setText(2, String.valueOf(df.format(average)));
-			
+	private void testService(Composite viewArea) {
+		Button service = new Button(viewArea, SWT.PUSH);
+		service.setText("Service");
+
+		service.addListener(SWT.Selection, new Listener() {
+			@Override
+			public void handleEvent(Event event) {
+
+				switch (event.type) {
+				case SWT.Selection:
+					ServiceImplementation serviceImpl = new ServiceImplementation();
+					
+					serviceImpl.getClassMetrics("C:\\Users\\psousasa\\Desktop\\Mestrado\\PA\\ISCDE\\TESTWORKSPACE\\pidesco.demo\\MetricsEditor.java", "MetricsEditor", viewArea);
+					break;
+				}
+
+			}
+		});
+	}
+	
+	private void putData(TableItem item, int position, int totalLines) {
+			item.setText(0, Constants.NAME_ROWS[position]);
+			double average = 0;
+			if (Constants.NAME_ROWS[position].endsWith(Constants.PACKAGES)) {
+				item.setText(1, String.valueOf(numberOfPackages));
+			} else if (Constants.NAME_ROWS[position].contains(Constants.CLASSES)) {
+				item.setText(1, String.valueOf(numberOfClasses));
+				average = (float) numberOfClasses / numberOfPackages;
+			} else if (Constants.NAME_ROWS[position].endsWith(Constants.METHODS)) {
+				item.setText(1, String.valueOf(numberOfMethods));
+				average = (float) numberOfMethods / numberOfClasses;
+			} else if (Constants.NAME_ROWS[position].endsWith(Constants.OVERRIDE)) {
+				item.setText(1, String.valueOf(numberOfOverride));
+				average = (float) numberOfOverride / numberOfMethods;
+			} else if (Constants.NAME_ROWS[position].endsWith(Constants.PARAMETERS)) {
+				item.setText(1, String.valueOf(numberOfParameters));
+				average = (float) numberOfParameters / numberOfMethods;
+			} else if (Constants.NAME_ROWS[position].endsWith(Constants.STATIC_ATTRIBUTES)) {
+				item.setText(1, String.valueOf(numberOfStaticAttributes));
+				average = (float) numberOfStaticAttributes / numberOfAttributes;
+			} else if (Constants.NAME_ROWS[position].endsWith(Constants.ATTRIBUTES)) {
+				item.setText(1, String.valueOf(numberOfAttributes));
+				average = (float) numberOfAttributes / numberOfClasses;
+			} else if (Constants.NAME_ROWS[position].endsWith(Constants.TOTAL_LINES)) {
+				item.setText(1, String.valueOf(totalLines));
+			}
+
+			if (average <= 0) {
+				item.setText(2, "-");
+			} else {
+				DecimalFormat df = new DecimalFormat("#.###");
+				item.setText(2, String.valueOf(df.format(average)));
+
+			}
+	}
+	
+	// extension point for project and class dependendo do boolean : true -> project; false -> class
+	private void getNewContent(boolean isProject) { 
+		IExtensionRegistry reg = Platform.getExtensionRegistry();
+		IConfigurationElement[] elements = reg	.getConfigurationElementsFor("pa.iscde.metrics.patricia.metricsExtension");
+		for (int i = 0; i < elements.length; i++) {
+			try {
+				String labelNewMetric = elements[i].getAttribute("label");
+				String nameNewMetric = elements[i].getAttribute("className");
+				ExtensibilityMetric action = (ExtensibilityMetric) elements[i].createExecutableExtension("class");
+
+				
+				TableItem givenMetric;
+				if (isProject) {
+					givenMetric = new TableItem(tableProject, SWT.NONE);
+
+					List<Double> metricValue = action.addMetricProject();
+
+					givenMetric.setText(0, labelNewMetric);
+					givenMetric.setText(1, String.valueOf(metricValue.get(0)));
+					givenMetric.setText(2, String.valueOf(metricValue.get(1)));
+				}
+				else {
+					double metricValue = action.addMetricClass();
+					if (nameNewMetric.equals(className)) {
+						givenMetric = new TableItem(tableProject, SWT.NONE);
+						givenMetric.setText(0, labelNewMetric);
+						givenMetric.setText(1, String.valueOf(metricValue));
+					}
+				}
+			} catch (CoreException e1) {
+				e1.printStackTrace();
+			}
 		}
 	}
 	

@@ -13,26 +13,8 @@ import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 
 public class Visitor extends ASTVisitor {
 
-	// Package HashMap (KEY package VALUE HashMap Classe
-	/*
-	 * {"package1" : HashMap class1; HashMap class2; HashMap class3; 
-	 *  "package2" : HashMap class4; HashMap class5; HashMap class6; }
-	 */
-//	private HashMap<String, String> packageHashMap = new HashMap<>();
 	private HashMap<String, HashMap<String, HashMap<String, String>>> packageHashMap = new HashMap<>();
-
-	// Class HashMap (KEY nome classe VALUE os metodos e atributos da classe)
-	/*
-	 * {"class1" : hashMap metodos, atributos, construtor da classe }
-	 */
 	private HashMap<String, HashMap<String, String>> classesNameHashMap;
-
-	// Class HashMap (KEY nome classe VALUE os metodos e atributos da classe)
-	/*
-	 * {"metodos" : metodo1; metodo2; metodo3 
-	 *  "atributos" : atributo1; atributo2; atributo3
-	 *  "construtor" : construtor }
-	 */
 	private HashMap<String, String> classInfoHashMap;
 
 	private String method = "";
@@ -43,8 +25,6 @@ public class Visitor extends ASTVisitor {
 	
 	private String packageName = "";
 	
-	
-
 	// visits packages
 	@Override
 	public boolean visit(PackageDeclaration node) {
@@ -103,12 +83,12 @@ public class Visitor extends ASTVisitor {
 			}
 			
 			classesNameHashMap.put(nameClass, classInfoHashMap);
-			
 			if (packageHashMap.containsKey(packageName)) {
 				packageHashMap.get(packageName).put(nameClass, classInfoHashMap);
 			}else {
 				packageHashMap.put(packageName, classesNameHashMap);
 			}
+			
 		} 
 		
 		//clean metrics for the next class
@@ -125,4 +105,9 @@ public class Visitor extends ASTVisitor {
 	public HashMap<String, HashMap<String, HashMap<String, String>>> getPackageHashMap() {
 		return packageHashMap;
 	}
+
+	public HashMap<String, HashMap<String, String>> getClassesNameHashMap() {
+		return classesNameHashMap;
+	}
+	
 }

@@ -55,7 +55,7 @@ public class CalculateMetrics {
 
 		}
 	}
-
+	
 	protected int getNumberOfClasses() {
 		return numberOfClasses;
 	}
