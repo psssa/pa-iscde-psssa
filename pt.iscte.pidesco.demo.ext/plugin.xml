@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+   <extension
+         id="testaction"
+         name="Test Action"
+         point="pt.iscte.pidesco.demo.actions">
+      <action
+      		name="Test Action"
+            class="pt.iscte.pidesco.demo.ext.TestAction">
+      </action>
+   </extension>
+   
+   <extension
+         id="testaction2"
+         name="Test Action 2"
+         point="pt.iscte.pidesco.demo.actions">
+      <action
+      		name="Test Action 2"
+            class="pt.iscte.pidesco.demo.ext.TestAction2">
+      </action>
+   </extension>
+   <extension
+         point="pa.iscde.metrics.patricia.metricsExtension">
+      <metricsExtension
+            class="pt.iscte.pidesco.demo.ext.TestMetrics"
+            className="lala"
+            label="MetricTest">
+      </metricsExtension>
+   </extension>
+   <extension
+         point="pa.iscde.metrics.patricia.metricsExtension">
+      <metricsExtension
+            class="pt.iscte.pidesco.demo.ext.TesteMetrics2"
+            className="MetricsEditor"
+            label="Metric 2">
+      </metricsExtension>
+   </extension>
+   
+</plugin>
